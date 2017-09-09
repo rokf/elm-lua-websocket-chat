@@ -12,7 +12,6 @@ type Msg = SendMsg | ReceivedMessage String | NewMessage String
 type alias Model =
   {  server_address : Maybe String
   ,  message_text : String
-  ,  username : Maybe String
   ,  messages : List (String, String)
   ,  uuid : Maybe String
   }
@@ -29,7 +28,6 @@ initial_model : Model
 initial_model =
   {  server_address = Just "ws://127.0.0.1:4000"
   ,  message_text = ""
-  ,  username = Nothing
   ,  messages = []
   ,  uuid = Nothing
   }
@@ -57,7 +55,10 @@ update msg model =
         if first == "uuid" then
           ({ model|uuid = Just second },Cmd.none)
         else
-          ({model|messages = (model.messages ++ [(first,second)])}, Cmd.none)
+          if List.length model.messages >= 13 then
+            ({model|messages = ((Maybe.withDefault [] (List.tail model.messages)) ++ [(first,second)])}, Cmd.none)
+          else
+            ({model|messages = (model.messages ++ [(first,second)])}, Cmd.none)
     SendMsg ->
       ({model|message_text = ""}, WebSocket.send (Maybe.withDefault "" model.server_address) model.message_text)
 
@@ -67,11 +68,15 @@ tastyle =
   ]
 
 msgView : (String,String) -> Html Msg
-msgView (username,msg) =
-  Html.div [HA.class "flex flex-row"]
-  [  Html.p [HA.class "b pa1 ma0"] [ Html.text username ]
-  ,  Html.p [HA.class "pa1 w-100 ma0"] [ Html.text msg ]
-  ]
+msgView (uid,msg) =
+  let
+    regexres = Array.fromList <| Regex.split (Regex.AtMost 1) (Regex.regex "-") uid
+    first = Maybe.withDefault "" (Array.get 0 regexres)
+  in
+    Html.div [HA.class "flex-1 flex flex-row"]
+    [  Html.p [HA.class "b pa1 ma0"] [ Html.text first ]
+    ,  Html.p [HA.class "pa1 w-100 ma0"] [ Html.text msg ]
+    ]
 
 view : Model -> Html Msg
 view model =
@@ -81,8 +86,8 @@ view model =
   ,  Html.p [HA.class "code i mt0 tracked"]
       [  Html.text (Maybe.withDefault "" model.uuid)  ]
   ,  Html.div
-      [  HA.class "oveflow-y-visible ba mb3"
-      ,  HA.style [("height", "300px")]
+      [  HA.class "ba mb3"
+      ,  HA.style [("height", "400px")]
       ]
       (List.map msgView model.messages)
   ,  Html.div [HA.class "flex flex-row justify-start"]

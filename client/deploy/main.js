@@ -9350,11 +9350,21 @@ _elm_lang$core$Native_Platform.effectManagers['WebSocket'] = {pkg: 'elm-lang/web
 
 var _user$project$Main$msgView = function (_p0) {
 	var _p1 = _p0;
+	var regexres = _elm_lang$core$Array$fromList(
+		A3(
+			_elm_lang$core$Regex$split,
+			_elm_lang$core$Regex$AtMost(1),
+			_elm_lang$core$Regex$regex('-'),
+			_p1._0));
+	var first = A2(
+		_elm_lang$core$Maybe$withDefault,
+		'',
+		A2(_elm_lang$core$Array$get, 0, regexres));
 	return A2(
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('flex flex-row'),
+			_0: _elm_lang$html$Html_Attributes$class('flex-1 flex flex-row'),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -9368,7 +9378,7 @@ var _user$project$Main$msgView = function (_p0) {
 				},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p1._0),
+					_0: _elm_lang$html$Html$text(first),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -9430,6 +9440,26 @@ var _user$project$Main$update = F2(
 							uuid: _elm_lang$core$Maybe$Just(second)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
+				} : ((_elm_lang$core$Native_Utils.cmp(
+					_elm_lang$core$List$length(model.messages),
+					13) > -1) ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							messages: A2(
+								_elm_lang$core$Basics_ops['++'],
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									{ctor: '[]'},
+									_elm_lang$core$List$tail(model.messages)),
+								{
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: first, _1: second},
+									_1: {ctor: '[]'}
+								})
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
 				} : {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9445,7 +9475,7 @@ var _user$project$Main$update = F2(
 								})
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
-				};
+				});
 			default:
 				return {
 					ctor: '_Tuple2',
@@ -9462,14 +9492,13 @@ var _user$project$Main$update = F2(
 var _user$project$Main$initial_model = {
 	server_address: _elm_lang$core$Maybe$Just('ws://127.0.0.1:4000'),
 	message_text: '',
-	username: _elm_lang$core$Maybe$Nothing,
 	messages: {ctor: '[]'},
 	uuid: _elm_lang$core$Maybe$Nothing
 };
 var _user$project$Main$init = {ctor: '_Tuple2', _0: _user$project$Main$initial_model, _1: _elm_lang$core$Platform_Cmd$none};
-var _user$project$Main$Model = F5(
-	function (a, b, c, d, e) {
-		return {server_address: a, message_text: b, username: c, messages: d, uuid: e};
+var _user$project$Main$Model = F4(
+	function (a, b, c, d) {
+		return {server_address: a, message_text: b, messages: c, uuid: d};
 	});
 var _user$project$Main$NewMessage = function (a) {
 	return {ctor: 'NewMessage', _0: a};
@@ -9527,13 +9556,13 @@ var _user$project$Main$view = function (model) {
 						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('oveflow-y-visible ba mb3'),
+							_0: _elm_lang$html$Html_Attributes$class('ba mb3'),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$style(
 									{
 										ctor: '::',
-										_0: {ctor: '_Tuple2', _0: 'height', _1: '300px'},
+										_0: {ctor: '_Tuple2', _0: 'height', _1: '400px'},
 										_1: {ctor: '[]'}
 									}),
 								_1: {ctor: '[]'}
