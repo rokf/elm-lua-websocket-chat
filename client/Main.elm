@@ -4,6 +4,8 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import WebSocket
+import Regex
+import Array
 
 type Msg = SendMsg | ReceivedMessage String | NewMessage String
 
@@ -12,6 +14,7 @@ type alias Model =
   ,  message_text : String
   ,  username : Maybe String
   ,  messages : List (String, String)
+  ,  uuid : Maybe String
   }
 
 main =
@@ -24,13 +27,11 @@ main =
 
 initial_model : Model
 initial_model =
-  {  server_address = Nothing -- TODO
+  {  server_address = Just "ws://127.0.0.1:4000"
   ,  message_text = ""
   ,  username = Nothing
-  ,  messages =
-      [  ("user","message")
-      ,  ("user","message")
-      ]
+  ,  messages = []
+  ,  uuid = Nothing
   }
 
 init : (Model, Cmd Msg)
@@ -48,7 +49,15 @@ update msg model =
       ({model|message_text = m},Cmd.none)
     ReceivedMessage str ->
       -- MATCH WITH REGEX AND APPEND TO model.messages
-      (model, Cmd.none)
+      let
+        regexres = Array.fromList <| Regex.split (Regex.AtMost 1) (Regex.regex ":") str
+        first = Maybe.withDefault "" (Array.get 0 regexres)
+        second = Maybe.withDefault "" (Array.get 1 regexres)
+      in
+        if first == "uuid" then
+          ({ model|uuid = Just second },Cmd.none)
+        else
+          ({model|messages = (model.messages ++ [(first,second)])}, Cmd.none)
     SendMsg ->
       ({model|message_text = ""}, WebSocket.send (Maybe.withDefault "" model.server_address) model.message_text)
 
@@ -70,13 +79,17 @@ view model =
   [  Html.h1 [HA.class "f2 code lh-copy"]
       [  Html.text "WebSocket Client"  ]
   ,  Html.p [HA.class "code i mt0 tracked"]
-      [  Html.text (Maybe.withDefault "" model.username)  ]
-  ,  Html.div [HA.class "ba mb3 flex h5 flex-column"]
+      [  Html.text (Maybe.withDefault "" model.uuid)  ]
+  ,  Html.div
+      [  HA.class "oveflow-y-visible ba mb3"
+      ,  HA.style [("height", "300px")]
+      ]
       (List.map msgView model.messages)
   ,  Html.div [HA.class "flex flex-row justify-start"]
       [  Html.input
           [  HA.class "input-reset ba b--black mr1 pa1 w-100"
           ,  HE.onInput NewMessage
+          ,  HA.value model.message_text
           ,  HA.placeholder "message"
           ] []
       ,  Html.button
