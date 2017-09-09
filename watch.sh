@@ -1,0 +1,1 @@
+echo 'client/Main.elm' | entr -s 'elm-make client/Main.elm --output client/deploy/main.js && xdotool search --onlyvisible --class Firefox windowfocus key F5 && xdotool search --onlyvisible --class Howl windowfocus'
